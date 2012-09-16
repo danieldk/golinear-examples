@@ -78,10 +78,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer metadataFile.Close()
 
 	metadataFile.Write(bMetadata)
-
-	metadataFile.Close()
 
 	//testPrefix := prefixes("Microsoft", 3)
 	//features := stringFeatureToFeature(testPrefix, featureMapping, norm)
