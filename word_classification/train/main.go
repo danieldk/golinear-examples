@@ -74,7 +74,7 @@ func main() {
 	}
 
 	metadataFile, err := os.OpenFile(fmt.Sprintf("%s.metadata", modelName),
-		os.O_WRONLY|os.O_CREATE, 0644)
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
