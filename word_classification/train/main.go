@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/danieldk/golinear"
-	"github.com/danieldk/golinear/examples/word_classification"
+	"github.com/danieldk/golinear-examples/word_classification"
 	"log"
 	"os"
 )
