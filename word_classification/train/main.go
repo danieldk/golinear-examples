@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/danieldk/golinear"
 	"github.com/danieldk/golinear-examples/word_classification"
@@ -35,15 +36,19 @@ func filterDictionary(dict word_classification.Dictionary, max uint64) {
 	}
 }
 
+var crossValidate = flag.Int("crossvalidate", -1, "Apply n-fold cross-validation")
+
 func main() {
-	if len(os.Args) != 3 {
+	flag.Parse()
+
+	if len(flag.Args()) != 2 {
 		fmt.Printf("Usage: %s lexicon modelname\n", os.Args[0])
 		os.Exit(1)
 	}
 
-	f, err := os.Open(os.Args[1])
+	f, err := os.Open(flag.Arg(0))
 	if err != nil {
-		fmt.Printf("Could not open file: %s\n", os.Args[1])
+		fmt.Printf("Could not open file: %s\n", flag.Arg(0))
 		os.Exit(1)
 	}
 
@@ -56,38 +61,58 @@ func main() {
 
 	param := golinear.DefaultParameters()
 
-	model, err := golinear.TrainModel(param, problem)
-	if err != nil {
-		panic(err)
+	if *crossValidate == -1 {
+		model, err := golinear.TrainModel(param, problem)
+		if err != nil {
+			panic(err)
+		}
+
+		modelName := flag.Arg(1)
+
+		err = model.Save(fmt.Sprintf("%s.model", modelName))
+		if err != nil {
+			panic(err)
+		}
+
+		bMetadata, err := json.Marshal(metadata)
+		if err != nil {
+			panic(err)
+		}
+
+		metadataFile, err := os.OpenFile(fmt.Sprintf("%s.metadata", modelName),
+			os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer metadataFile.Close()
+
+		metadataFile.Write(bMetadata)
+
+		//testPrefix := prefixes("Microsoft", 3)
+		//features := stringFeatureToFeature(testPrefix, featureMapping, norm)
+
+		//class := model.Predict(features)
+
+		//numberTagMapping := reverseMapping(tagMapping)
+
+		//fmt.Printf("Predicted class: %s\n", numberTagMapping[int(class)])
+	} else {
+		results, err := golinear.CrossValidation(problem, param, uint(*crossValidate))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Count correct classifications.
+		var idx uint = 0
+		var correct uint = 0
+		problem.Iterate(func(instance *golinear.TrainingInstance) {
+			if results[idx] == instance.Label {
+				correct++
+			}
+
+			idx++
+		})
+
+		fmt.Printf("Accuracy: %f\n", float64(correct)/float64(len(results)))
 	}
-
-	modelName := os.Args[2]
-
-	err = model.Save(fmt.Sprintf("%s.model", modelName))
-	if err != nil {
-		panic(err)
-	}
-
-	bMetadata, err := json.Marshal(metadata)
-	if err != nil {
-		panic(err)
-	}
-
-	metadataFile, err := os.OpenFile(fmt.Sprintf("%s.metadata", modelName),
-		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer metadataFile.Close()
-
-	metadataFile.Write(bMetadata)
-
-	//testPrefix := prefixes("Microsoft", 3)
-	//features := stringFeatureToFeature(testPrefix, featureMapping, norm)
-
-	//class := model.Predict(features)
-
-	//numberTagMapping := reverseMapping(tagMapping)
-
-	//fmt.Printf("Predicted class: %s\n", numberTagMapping[int(class)])
 }
