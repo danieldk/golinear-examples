@@ -107,7 +107,7 @@ func ExtractFeatures(dict Dictionary) (*golinear.Problem, ModelMetadata) {
 	}
 
 	for word, tags := range dict {
-		featureVec := StringFeatureToFeature(AppendFeatureLists(Prefixes(word, 3), Suffixes(word, 3)), featureMapping, float64(norm))
+		featureVec := StringFeatureToFeature(AppendFeatureLists(Prefixes(word, 4), Suffixes(word, 4)), featureMapping, float64(norm))
 
 		for tag, count := range tags {
 			id, found := tagMapping[tag]
