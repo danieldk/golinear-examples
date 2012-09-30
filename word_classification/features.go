@@ -1,8 +1,11 @@
 package word_classification
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/danieldk/golinear"
+	"io"
+	"io/ioutil"
 )
 
 type StringFeature struct {
@@ -14,6 +17,21 @@ type ModelMetadata struct {
 	FeatureMapping map[string]int
 	ClassMapping   map[string]int
 	Normalizer     float64
+}
+
+func LoadMetadata(reader io.Reader) (*ModelMetadata, error) {
+	bMetaData, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	var metadata ModelMetadata
+	err = json.Unmarshal(bMetaData, &metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	return &metadata, nil
 }
 
 func reverse(s string) string {

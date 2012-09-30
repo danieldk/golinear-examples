@@ -2,11 +2,9 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"github.com/danieldk/golinear"
 	"github.com/danieldk/golinear-examples/word_classification"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -19,22 +17,7 @@ func loadMetadata(modelBasename string) (*word_classification.ModelMetadata, err
 	defer f.Close()
 	reader := bufio.NewReader(f)
 
-	bMetaData, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	var metadata word_classification.ModelMetadata
-	err = json.Unmarshal(bMetaData, &metadata)
-	if err != nil {
-		return nil, err
-	}
-
-	println(metadata.FeatureMapping)
-	println(metadata.ClassMapping)
-	println(metadata.Normalizer)
-
-	return &metadata, nil
+	return word_classification.LoadMetadata(reader)
 }
 
 func reverseMapping(mapping map[string]int) map[int]string {
