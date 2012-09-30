@@ -32,6 +32,7 @@ func reverseMapping(mapping map[string]int) map[int]string {
 
 func main() {
 	if len(os.Args) != 3 {
+		fmt.Printf("%s model word\n", os.Args[0])
 		os.Exit(1)
 	}
 
