@@ -36,8 +36,6 @@ func filterDictionary(dict word_classification.Dictionary, max uint64) {
 	}
 }
 
-var crossValidate = flag.Int("crossvalidate", -1, "Apply n-fold cross-validation")
-
 func main() {
 	flag.Parse()
 
@@ -61,58 +59,38 @@ func main() {
 
 	param := golinear.DefaultParameters()
 
-	if *crossValidate == -1 {
-		model, err := golinear.TrainModel(param, problem)
-		if err != nil {
-			panic(err)
-		}
-
-		modelName := flag.Arg(1)
-
-		err = model.Save(fmt.Sprintf("%s.model", modelName))
-		if err != nil {
-			panic(err)
-		}
-
-		bMetadata, err := json.Marshal(metadata)
-		if err != nil {
-			panic(err)
-		}
-
-		metadataFile, err := os.OpenFile(fmt.Sprintf("%s.metadata", modelName),
-			os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer metadataFile.Close()
-
-		metadataFile.Write(bMetadata)
-
-		//testPrefix := prefixes("Microsoft", 3)
-		//features := stringFeatureToFeature(testPrefix, featureMapping, norm)
-
-		//class := model.Predict(features)
-
-		//numberTagMapping := reverseMapping(tagMapping)
-
-		//fmt.Printf("Predicted class: %s\n", numberTagMapping[int(class)])
-	} else {
-		results, err := golinear.CrossValidation(problem, param, uint(*crossValidate))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Count correct classifications.
-		var idx uint = 0
-		var correct uint = 0
-		problem.Iterate(func(instance *golinear.TrainingInstance) {
-			if results[idx] == instance.Label {
-				correct++
-			}
-
-			idx++
-		})
-
-		fmt.Printf("Accuracy: %f\n", float64(correct)/float64(len(results)))
+	model, err := golinear.TrainModel(param, problem)
+	if err != nil {
+		panic(err)
 	}
+
+	modelName := flag.Arg(1)
+
+	err = model.Save(fmt.Sprintf("%s.model", modelName))
+	if err != nil {
+		panic(err)
+	}
+
+	bMetadata, err := json.Marshal(metadata)
+	if err != nil {
+		panic(err)
+	}
+
+	metadataFile, err := os.OpenFile(fmt.Sprintf("%s.metadata", modelName),
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer metadataFile.Close()
+
+	metadataFile.Write(bMetadata)
+
+	//testPrefix := prefixes("Microsoft", 3)
+	//features := stringFeatureToFeature(testPrefix, featureMapping, norm)
+
+	//class := model.Predict(features)
+
+	//numberTagMapping := reverseMapping(tagMapping)
+
+	//fmt.Printf("Predicted class: %s\n", numberTagMapping[int(class)])
 }
