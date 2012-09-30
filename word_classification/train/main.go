@@ -21,21 +21,6 @@ func reverseMapping(mapping map[string]int) map[int]string {
 	return reverse
 }
 
-func filterDictionary(dict word_classification.Dictionary, max uint64) {
-	for word, m := range dict {
-		var count uint64 = 0
-
-		for _, freq := range m {
-			count += freq
-		}
-
-		if count > max {
-			// XXX - delete
-			dict[word] = make(map[string]uint64)
-		}
-	}
-}
-
 func main() {
 	flag.Parse()
 
@@ -53,7 +38,7 @@ func main() {
 	r := bufio.NewReader(f)
 	dict := word_classification.ReadDictionary(r)
 
-	filterDictionary(dict, 6)
+	word_classification.FilterDictionary(dict, 6)
 
 	problem, metadata := word_classification.ExtractFeatures(dict)
 
