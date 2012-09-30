@@ -41,7 +41,7 @@ func reverse(s string) string {
 	return string(runes)
 }
 
-var DefaultTemplates = []FeatureTemplate{Prefixes(4), Suffixes(4), Capitals, Monetary, Punct}
+var DefaultTemplates = []FeatureTemplate{Prefixes(4), Suffixes(4), Capitals, Punct}
 
 func ApplyTemplates(templates []FeatureTemplate, word string) []StringFeature {
 	features := make([]StringFeature, 0)
