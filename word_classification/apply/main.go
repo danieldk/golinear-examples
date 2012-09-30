@@ -47,7 +47,7 @@ func main() {
 	}
 
 	word := os.Args[2]
-	sfs := word_classification.AppendFeatureLists(word_classification.Prefixes(word, 3), word_classification.Suffixes(word, 3))
+	sfs := word_classification.ApplyTemplates(word_classification.DefaultTemplates, word)
 	//	fmt.Printf("%#v", sfs)
 	fs := word_classification.StringFeatureToFeature(sfs, metadata.FeatureMapping, metadata.Normalizer)
 

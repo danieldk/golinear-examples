@@ -42,33 +42,42 @@ func reverse(s string) string {
 	return string(runes)
 }
 
-func Suffixes(word string, n int) []StringFeature {
+type FeatureTemplate func(string) []StringFeature
+
+func GenericPrefix(n int, format, word string) []StringFeature {
 	if len(word) < n {
 		n = len(word)
 	}
 
-	reversed := reverse(word)
-
 	features := make([]StringFeature, n)
 
 	for i := 0; i < n; i++ {
-		features[i].Feature = fmt.Sprintf("suffix(%s)", reversed[:i+1])
+		features[i].Feature = fmt.Sprintf(format, word[:i+1])
 		features[i].Value = 1.0
 	}
 
 	return features
 }
 
-func Prefixes(word string, n int) []StringFeature {
-	if len(word) < n {
-		n = len(word)
+func Prefixes(n int) FeatureTemplate {
+	return func(word string) []StringFeature {
+		return GenericPrefix(n, "prefix(%s)", word)
 	}
+}
 
-	features := make([]StringFeature, n)
+func Suffixes(n int) FeatureTemplate {
+	return func(word string) []StringFeature {
+		reversed := reverse(word)
+		return GenericPrefix(n, "suffix(%s)", reversed)
+	}
+}
 
-	for i := 0; i < n; i++ {
-		features[i].Feature = fmt.Sprintf("prefix(%s)", word[:i+1])
-		features[i].Value = 1.0
+var DefaultTemplates = []FeatureTemplate{Prefixes(4), Suffixes(4)}
+
+func ApplyTemplates(templates []FeatureTemplate, word string) []StringFeature {
+	features := make([]StringFeature, 0)
+	for _, template := range templates {
+		features = append(features, template(word)...)
 	}
 
 	return features
@@ -107,7 +116,8 @@ func ExtractFeatures(dict Dictionary) (*golinear.Problem, ModelMetadata) {
 	}
 
 	for word, tags := range dict {
-		featureVec := StringFeatureToFeature(append(Prefixes(word, 4), Suffixes(word, 4)...), featureMapping, float64(norm))
+		featureVec := StringFeatureToFeature(ApplyTemplates(DefaultTemplates, word),
+			featureMapping, float64(norm))
 
 		for tag, count := range tags {
 			id, found := tagMapping[tag]

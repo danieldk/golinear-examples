@@ -68,7 +68,7 @@ func main() {
 	totalPerClass := make(map[string]int)
 
 	for word, tagFreq := range testDict {
-		sfs := append(word_classification.Prefixes(word, 4), word_classification.Suffixes(word, 4)...)
+		sfs := word_classification.ApplyTemplates(word_classification.DefaultTemplates, word)
 		fs := word_classification.StringFeatureToFeature(sfs, metadata.FeatureMapping, metadata.Normalizer)
 
 		for tag, freq := range tagFreq {
