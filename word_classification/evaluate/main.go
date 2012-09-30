@@ -64,6 +64,9 @@ func main() {
 
 	total, correct, baseline := 0, 0, 0
 
+	errorsPerClass := make(map[string]int)
+	totalPerClass := make(map[string]int)
+
 	for word, tagFreq := range testDict {
 		sfs := append(word_classification.Prefixes(word, 3), word_classification.Suffixes(word, 3)...)
 		fs := word_classification.StringFeatureToFeature(sfs, metadata.FeatureMapping, metadata.Normalizer)
@@ -73,9 +76,13 @@ func main() {
 			for i = 0; i < freq; i++ {
 				class := model.Predict(fs)
 
+				predictedTag := indexToClass[int(class)]
+
 				// Update counts
-				if indexToClass[int(class)] == tag {
+				if predictedTag == tag {
 					correct++
+				} else {
+					errorsPerClass[predictedTag]++
 				}
 
 				if tag == "NN" {
@@ -83,11 +90,19 @@ func main() {
 				}
 
 				total++
+				totalPerClass[predictedTag]++
 			}
 		}
 	}
 
-	fmt.Printf("Correct classifications: %d, total: %d\n", correct, total)
-	fmt.Printf("Accuracy: %.2f\n", float64(correct)/float64(total))
-	fmt.Printf("Baseline: %.2f\n", float64(baseline)/float64(total))
+	errors := total - correct
+	for class, classErrors := range errorsPerClass {
+		fmt.Printf("%s:\t\t%.2f%%\t%.2f%%\n", class,
+			float64(classErrors)/float64(errors)*100,
+			float64(classErrors)/float64(totalPerClass[class])*100)
+	}
+
+	//fmt.Printf("Correct classifications: %d, total: %d\n", correct, total)
+	fmt.Printf("\nAccuracy: %.2f%%\n", float64(correct)/float64(total)*100)
+	fmt.Printf("Baseline: %.2f%%\n", float64(baseline)/float64(total)*100)
 }
