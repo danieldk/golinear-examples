@@ -6,7 +6,7 @@ import (
 
 type FeatureTemplate func(string) []StringFeature
 
-func GenericPrefix(n int, format, word string) []StringFeature {
+func genericPrefix(n int, format, word string) []StringFeature {
 	if len(word) < n {
 		n = len(word)
 	}
@@ -23,13 +23,13 @@ func GenericPrefix(n int, format, word string) []StringFeature {
 
 func Prefixes(n int) FeatureTemplate {
 	return func(word string) []StringFeature {
-		return GenericPrefix(n, "prefix(%s)", word)
+		return genericPrefix(n, "prefix(%s)", word)
 	}
 }
 
 func Suffixes(n int) FeatureTemplate {
 	return func(word string) []StringFeature {
 		reversed := reverse(word)
-		return GenericPrefix(n, "suffix(%s)", reversed)
+		return genericPrefix(n, "suffix(%s)", reversed)
 	}
 }
